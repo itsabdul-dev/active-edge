@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Truck, RefreshCw, ShieldCheck, Recycle, ArrowUpRight } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { Hero } from "@/components/hero";
-import { bestsellers } from "@/lib/products";
+import { loadCatalogue } from "@/lib/catalog";
 import womensNavy from "@/assets/AE_Womens_Motion_Set_Navy.webp";
 import mensBlack from "@/assets/AE_Motion_Shorts_Black.webp";
 import heroGym from "@/assets/hero-gym.jpg";
@@ -10,6 +10,7 @@ import heroConcrete from "@/assets/hero-concrete.jpg";
 import fabricHero from "@/assets/fabric-hero.jpg";
 
 export const Route = createFileRoute("/")({
+  loader: () => loadCatalogue(),
   head: () => ({
     meta: [
       { title: "ActiveEdge | Performance Activewear Built For Every Edge" },
@@ -57,6 +58,17 @@ const index_stats = [
 ];
 
 function Index() {
+  const products = Route.useLoaderData();
+  const bestsellers = products.some((p) => p.featuredRank != null)
+    ? products
+        .filter((p) => p.featuredRank != null)
+        .sort((a, b) => a.featuredRank! - b.featuredRank!)
+        .slice(0, 4)
+    : products.filter((p) =>
+        ["apex-training-hoodie", "womens-motion-set", "performance-tee", "motion-shorts"].includes(
+          p.slug,
+        ),
+      );
   return (
     <div>
       <Hero />

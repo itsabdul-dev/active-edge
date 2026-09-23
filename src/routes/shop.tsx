@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { formatZar, products, type Product } from "@/lib/products";
+import { formatZar, type Product } from "@/lib/products";
+
+import { loadCatalogue } from "@/lib/catalog";
 
 export const Route = createFileRoute("/shop")({
+  loader: () => loadCatalogue(),
   head: () => ({
     meta: [
       { title: "Shop Eco Activewear | ActiveEdge South Africa" },
@@ -47,15 +50,21 @@ const swatchTone: Record<string, string> = {
 };
 
 function ShopPage() {
+  const products = Route.useLoaderData();
   const [active, setActive] = useState<Filter>("All");
   const [sort, setSort] = useState<Sort>("Featured");
 
   const visible = useMemo(() => {
-    const list = active === "All" ? products : products.filter((p) => p.category === active);
+    const list =
+      active === "All"
+        ? products
+        : products.filter((p) =>
+            active === "Sets" ? (p.isSet ?? p.category === "Sets") : p.category === active,
+          );
     if (sort === "Price low") return [...list].sort((a, b) => a.price - b.price);
     if (sort === "Price high") return [...list].sort((a, b) => b.price - a.price);
     return list;
-  }, [active, sort]);
+  }, [active, sort, products]);
 
   return (
     <div>
@@ -76,7 +85,7 @@ function ShopPage() {
                 sewn in Woodstock and shipped plastic-free anywhere in South Africa.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-4 border-t border-primary-foreground/20 pt-6 text-xs uppercase tracking-[0.18em] opacity-70">
-                <span>Free delivery over R750</span>
+                <span>Free delivery over R900</span>
                 <span>2-year repair promise</span>
               </div>
             </div>

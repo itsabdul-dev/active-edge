@@ -1,0 +1,18 @@
+project_id = "activeedge"
+
+# Only declare settings managed by this repository. The CLI leaves other hosted
+# settings unchanged; always run `supabase config diff` before pushing.
+[auth]
+site_url = "https://active-edge-website.vercel.app"
+additional_redirect_urls = [
+  "https://active-edge-website.vercel.app/auth/callback",
+  "https://active-edge-website.vercel.app/auth/callback?next=reset",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3000/auth/callback?next=reset",
+  "http://localhost:4173/auth/callback",
+  "http://localhost:4173/auth/callback?next=reset"
+]
+minimum_password_length = 12
+
+[auth.email]
+enable_confirmations = true

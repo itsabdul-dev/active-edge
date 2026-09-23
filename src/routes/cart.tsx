@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, X } from "lucide-react";
-import { useCart } from "@/lib/cart";
+import { useCart } from "@/lib/cart-context";
 import { formatZar } from "@/lib/products";
 
 export const Route = createFileRoute("/cart")({
@@ -20,8 +20,21 @@ export const Route = createFileRoute("/cart")({
 });
 
 function CartPage() {
-  const { lines, setQty, remove, subtotal } = useCart();
+  const { lines, setQty, remove, subtotal, loading, updating, error } = useCart();
   const shipping = subtotal === 0 || subtotal >= 900 ? 0 : 85;
+
+  if (loading)
+    return (
+      <p className="px-5 py-24 text-center" role="status">
+        Loading your bag…
+      </p>
+    );
+  if (error)
+    return (
+      <p className="px-5 py-24 text-center" role="alert">
+        {error}
+      </p>
+    );
 
   if (lines.length === 0) {
     return (
@@ -62,6 +75,7 @@ function CartPage() {
                     </p>
                   </div>
                   <button
+                    disabled={updating}
                     onClick={() => remove(l.id)}
                     aria-label={`Remove ${l.name}`}
                     className="text-muted-foreground hover:text-foreground"
@@ -71,11 +85,19 @@ function CartPage() {
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex items-center gap-3 rounded-sm border border-border px-2 py-1">
-                    <button onClick={() => setQty(l.id, l.qty - 1)} aria-label="Decrease quantity">
+                    <button
+                      disabled={updating}
+                      onClick={() => setQty(l.id, l.qty - 1)}
+                      aria-label="Decrease quantity"
+                    >
                       <Minus className="size-3.5" />
                     </button>
                     <span className="w-5 text-center text-sm">{l.qty}</span>
-                    <button onClick={() => setQty(l.id, l.qty + 1)} aria-label="Increase quantity">
+                    <button
+                      disabled={updating || l.qty >= 99}
+                      onClick={() => setQty(l.id, l.qty + 1)}
+                      aria-label="Increase quantity"
+                    >
                       <Plus className="size-3.5" />
                     </button>
                   </div>

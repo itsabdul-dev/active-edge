@@ -24,9 +24,11 @@ import haloBlack from "@/assets/AE_Halo_Bra_Black.jpg";
 import haloPowder from "@/assets/AE_Halo_Bra_Powder.jpg";
 import haloClay from "@/assets/AE_Halo_Bra_Clay.jpg";
 
-export type Variant = { name: string; image: string };
+export type Variant = { name: string; image: string; sizes?: { id: string; size: string; price: number; stock: number }[] };
 
 export type Product = {
+  isSet?: boolean;
+  featuredRank?: number | null;
   slug: string;
   name: string;
   price: number;

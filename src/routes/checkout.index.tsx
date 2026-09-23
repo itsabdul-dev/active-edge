@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { useCart } from "@/lib/cart";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { getSupabaseBrowser } from "@/lib/supabase/browser";
+import { useCart } from "@/lib/cart-context";
 import { formatZar } from "@/lib/products";
 
 export const Route = createFileRoute("/checkout/")({
@@ -25,8 +27,10 @@ const field =
   "mt-1 w-full rounded-sm border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary";
 
 function CheckoutAddress() {
-  const { lines, subtotal } = useCart();
+  const { lines, subtotal, loading, error } = useCart();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [addresses, setAddresses] = useState<Record<string, string>[]>([]);
   const [form, setForm] = useState({
     email: "",
     firstName: "",
@@ -38,6 +42,36 @@ function CheckoutAddress() {
     phone: "",
   });
   const shipping = subtotal === 0 || subtotal >= 900 ? 0 : 85;
+  useEffect(() => {
+    if (!user) {
+      setAddresses([]);
+      return;
+    }
+    let active = true;
+    setForm((f) => ({ ...f, email: user.email ?? f.email }));
+    void getSupabaseBrowser()
+      .from("customer_address")
+      .select("*")
+      .eq("customer_id", user.id)
+      .then(({ data }) => {
+        if (active) setAddresses(data ?? []);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user]);
+  if (loading)
+    return (
+      <p className="px-5 py-24 text-center" role="status">
+        Loading your bag…
+      </p>
+    );
+  if (error)
+    return (
+      <p className="px-5 py-24 text-center" role="alert">
+        {error}
+      </p>
+    );
 
   if (lines.length === 0) {
     return (
@@ -59,10 +93,48 @@ function CheckoutAddress() {
       <p className="eyebrow text-muted-foreground">Step 1 of 2</p>
       <h1 className="mt-3 text-3xl sm:text-4xl">Delivery details</h1>
 
+      {!user && (
+        <p className="mt-4 text-sm text-muted-foreground">
+          <Link to="/account" className="underline">
+            Sign in
+          </Link>{" "}
+          for saved delivery details, or continue as a guest.
+        </p>
+      )}
+      {addresses.length > 0 && (
+        <label className="mt-6 block text-sm">
+          Use a saved address
+          <select
+            className={field}
+            defaultValue=""
+            onChange={(e) => {
+              const a = addresses.find((a) => a["address_id"] === e.target.value);
+              if (a)
+                setForm((f) => ({
+                  ...f,
+                  firstName: a["first_name"] ?? "",
+                  lastName: a["last_name"] ?? "",
+                  phone: a["phone"] ?? "",
+                  address: a["street"] ?? "",
+                  suburb: a["suburb"] ?? "",
+                  city: a["city"] ?? "",
+                  postcode: a["postal_code"] ?? "",
+                }));
+            }}
+          >
+            <option value="">Choose an address</option>
+            {addresses.map((a) => (
+              <option key={a["address_id"]} value={a["address_id"]}>
+                {a["label"]} — {a["street"]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          localStorage.setItem("ae-checkout-address", JSON.stringify(form));
+          sessionStorage.setItem("ae-checkout-address", JSON.stringify(form));
           navigate({ to: "/checkout/payment" });
         }}
         className="mt-10 grid gap-12 lg:grid-cols-[1.6fr_1fr]"

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
-import { useCart } from "@/lib/cart";
+import { useCart } from "@/lib/cart-context";
 import { formatZar } from "@/lib/products";
 
 export const Route = createFileRoute("/checkout/payment")({
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/checkout/payment")({
       { title: "Checkout — Payment | ActiveEdge" },
       {
         name: "description",
-        content: "Enter your payment details to place your ActiveEdge order.",
+        content: "Preview the ActiveEdge demo checkout. No payment is processed or order placed.",
       },
       { property: "og:title", content: "Checkout — Payment | ActiveEdge" },
       { property: "og:description", content: "Secure demo payment for your ActiveEdge order." },
@@ -18,9 +18,6 @@ export const Route = createFileRoute("/checkout/payment")({
   }),
   component: CheckoutPayment,
 });
-
-const field =
-  "mt-1 w-full rounded-sm border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary";
 
 type Address = {
   firstName?: string;
@@ -32,30 +29,42 @@ type Address = {
 };
 
 function CheckoutPayment() {
-  const { lines, subtotal, clear } = useCart();
+  const { lines, subtotal, loading, error } = useCart();
   const [address, setAddress] = useState<Address | null>(null);
   const [placed, setPlaced] = useState(false);
-  const [card, setCard] = useState({ name: "", number: "", expiry: "", cvc: "" });
   const shipping = subtotal === 0 || subtotal >= 900 ? 0 : 85;
   const [paidTotal, setPaidTotal] = useState(0);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("ae-checkout-address");
+      const raw = sessionStorage.getItem("ae-checkout-address");
       if (raw) setAddress(JSON.parse(raw) as Address);
     } catch {
       /* ignore */
     }
   }, []);
 
+  if (loading)
+    return (
+      <p className="px-5 py-24 text-center" role="status">
+        Loading your bag…
+      </p>
+    );
+  if (error)
+    return (
+      <p className="px-5 py-24 text-center" role="alert">
+        {error}
+      </p>
+    );
+
   if (placed) {
     return (
       <div className="mx-auto max-w-xl px-5 py-24 text-center">
-        <p className="eyebrow text-clay">Order received</p>
-        <h1 className="mt-4 text-3xl">Thanks — your kit is on its way.</h1>
+        <p className="eyebrow text-clay">Demo complete</p>
+        <h1 className="mt-4 text-3xl">You've finished the demo checkout.</h1>
         <p className="mt-4 text-muted-foreground">
-          We've emailed your confirmation. {formatZar(paidTotal)} charged to your card. Orders
-          placed before 11:00 leave our Cape Town studio the same day.
+          Your demo total was {formatZar(paidTotal)}. No payment was taken, no order was placed, and
+          no confirmation email was sent.
         </p>
         <Link to="/shop" className="btn-solid mt-8 inline-block">
           Keep shopping
@@ -79,13 +88,16 @@ function CheckoutPayment() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-14">
       <p className="eyebrow text-muted-foreground">Step 2 of 2</p>
-      <h1 className="mt-3 text-3xl sm:text-4xl">Payment</h1>
+      <h1 className="mt-3 text-3xl sm:text-4xl">Demo payment</h1>
+      <p className="mt-3 text-sm text-muted-foreground">
+        This is a preview of checkout. Your bag will be kept for later. No payment will be processed
+        or order placed.
+      </p>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
           setPaidTotal(subtotal + shipping);
-          clear();
           setPlaced(true);
         }}
         className="mt-10 grid gap-12 lg:grid-cols-[1.6fr_1fr]"
@@ -107,48 +119,11 @@ function CheckoutPayment() {
             </div>
           )}
 
-          <label className="block text-sm">
-            Name on card
-            <input
-              required
-              value={card.name}
-              onChange={(e) => setCard({ ...card, name: e.target.value })}
-              className={field}
-            />
-          </label>
-          <label className="block text-sm">
-            Card number
-            <input
-              required
-              inputMode="numeric"
-              placeholder="4242 4242 4242 4242"
-              value={card.number}
-              onChange={(e) => setCard({ ...card, number: e.target.value })}
-              className={field}
-            />
-          </label>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <label className="block text-sm">
-              Expiry
-              <input
-                required
-                placeholder="MM/YY"
-                value={card.expiry}
-                onChange={(e) => setCard({ ...card, expiry: e.target.value })}
-                className={field}
-              />
-            </label>
-            <label className="block text-sm">
-              CVC
-              <input
-                required
-                inputMode="numeric"
-                placeholder="123"
-                value={card.cvc}
-                onChange={(e) => setCard({ ...card, cvc: e.target.value })}
-                className={field}
-              />
-            </label>
+          <div className="border border-border bg-sand p-6">
+            <h2 className="text-lg">Online payments are coming soon</h2>
+            <p className="mt-3 text-sm text-muted-foreground">
+              You can preview the order total below. No card details are needed for this demo.
+            </p>
           </div>
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
             <Lock className="size-3.5" /> Demo checkout — no real payment is processed.
@@ -181,7 +156,7 @@ function CheckoutPayment() {
             type="submit"
             className="mt-6 w-full rounded-sm bg-primary px-6 py-4 text-sm font-semibold uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90"
           >
-            Pay {formatZar(subtotal + shipping)}
+            Complete demo · {formatZar(subtotal + shipping)}
           </button>
         </aside>
       </form>

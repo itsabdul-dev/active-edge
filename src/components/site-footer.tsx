@@ -1,7 +1,11 @@
+import { useState } from "react";
+import { subscribeNewsletter } from "@/server/newsletter";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/ae-logo.svg";
 
 export function SiteFooter() {
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
   return (
     <footer className="border-t border-border bg-primary text-primary-foreground">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4">
@@ -61,25 +65,56 @@ export function SiteFooter() {
           </p>
           <form
             className="mt-4 flex"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              (e.currentTarget as HTMLFormElement).reset();
+              const form = e.currentTarget;
+              const values = new FormData(form);
+              setBusy(true);
+              setMessage("");
+              try {
+                await subscribeNewsletter({
+                  data: {
+                    email: String(values.get("email")),
+                    website: String(values.get("website") ?? ""),
+                  },
+                });
+                form.reset();
+                setMessage("Your signup request has been saved.");
+              } catch {
+                setMessage("Signup is temporarily unavailable. Please try again later.");
+              } finally {
+                setBusy(false);
+              }
             }}
           >
             <input
+              name="email"
               type="email"
               required
               placeholder="Email address"
               aria-label="Email address"
               className="min-w-0 flex-1 border border-white/25 bg-transparent px-3 py-2.5 text-sm placeholder:text-white/40 focus:border-white focus:outline-none"
             />
+            <input
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="hidden"
+            />
             <button
+              disabled={busy}
               type="submit"
               className="bg-white px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-black"
             >
-              Join
+              {busy ? "Saving…" : "Join"}
             </button>
           </form>
+          {message && (
+            <p role="status" className="mt-3 text-xs">
+              {message}
+            </p>
+          )}
         </div>
       </div>
       <div className="border-t border-white/15">

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { ShoppingBag, Menu, X } from "lucide-react";
+import { ShoppingBag, Menu, X, UserRound } from "lucide-react";
 import { useState } from "react";
-import { useCart } from "@/lib/cart";
+import { useCart } from "@/lib/cart-context";
 import logo from "@/assets/ae-logo.svg";
 
 const nav = [
@@ -46,9 +46,12 @@ export function SiteHeader() {
               </Link>
             ))}
           </nav>
+          <Link to="/account" aria-label="My account" className="ml-auto p-1 md:ml-0">
+            <UserRound className="size-5" />
+          </Link>
           <Link
             to="/cart"
-            className="relative ml-auto flex items-center gap-2 text-sm md:ml-8"
+            className="relative flex items-center gap-2 text-sm md:ml-2"
             aria-label="Cart"
           >
             <ShoppingBag className="size-5" />

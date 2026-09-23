@@ -2,15 +2,17 @@ import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Check, Leaf, Truck, RotateCcw } from "lucide-react";
-import { formatZar, getProduct, products, type Product } from "@/lib/products";
-import { useCart } from "@/lib/cart";
+import { formatZar, type Product } from "@/lib/products";
+import { loadCatalogue } from "@/lib/catalog";
+import { useCart } from "@/lib/cart-context";
 import { ProductCard } from "@/components/product-card";
 
 export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
+  loader: async ({ params }) => {
+    const products = await loadCatalogue();
+    const product = products.find((p) => p.slug === params.slug);
     if (!product) throw notFound();
-    return { product };
+    return { product, products };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -46,7 +48,9 @@ export const Route = createFileRoute("/product/$slug")({
               "@type": "Offer",
               price: product.price,
               priceCurrency: "ZAR",
-              availability: "https://schema.org/InStock",
+              availability: product.variants.some((v) => v.sizes?.some((s) => s.stock > 0))
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
             },
           }),
         },
@@ -57,31 +61,43 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData() as { product: Product };
-  const { add } = useCart();
+  const { product, products } = Route.useLoaderData();
+  const { add, updating } = useCart();
   const [variant, setVariant] = useState(0);
   const [size, setSize] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
   const current = product.variants[variant]!;
+  const selectedSku = current.sizes?.find((s) => s.size === size);
+  const selectedPrice = selectedSku?.price ?? product.price;
+  const unavailable = Boolean(current.sizes && (!selectedSku || selectedSku.stock < qty));
   const related = products.filter((p) => p.slug !== product.slug).slice(0, 3);
 
-  const addToBag = () => {
+  const addToBag = async () => {
     if (!size) {
       toast.error("Choose a size first");
       return;
     }
-    add(
-      {
-        slug: product.slug,
-        name: product.name,
-        variant: current.name,
-        size,
-        price: product.price,
-        image: current.image,
-      },
-      qty,
-    );
-    toast.success(`${product.name} (${current.name}, ${size}) added to your bag`);
+    if (unavailable) {
+      toast.error("This size is currently out of stock.");
+      return;
+    }
+    try {
+      await add(
+        {
+          slug: product.slug,
+          name: product.name,
+          variant: current.name,
+          size,
+          price: selectedPrice,
+          ...(selectedSku ? { variantId: selectedSku.id } : {}),
+          image: current.image,
+        },
+        qty,
+      );
+      toast.success(`${product.name} (${current.name}, ${size}) added to your bag`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not add to bag.");
+    }
   };
 
   return (
@@ -110,7 +126,10 @@ function ProductPage() {
             {product.variants.map((v, i) => (
               <button
                 key={v.name}
-                onClick={() => setVariant(i)}
+                onClick={() => {
+                  setVariant(i);
+                  setSize(null);
+                }}
                 aria-label={v.name}
                 className={
                   "w-20 overflow-hidden rounded-sm border-2 transition-colors " +
@@ -133,9 +152,9 @@ function ProductPage() {
         <div className="lg:sticky lg:top-24 lg:h-fit lg:pt-4">
           <p className="eyebrow text-clay">{product.category}</p>
           <h1 className="mt-3 text-3xl sm:text-4xl">{product.name}</h1>
-          <p className="mt-2 text-lg">{formatZar(product.price)}</p>
+          <p className="mt-2 text-lg">{formatZar(selectedPrice)}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Or 4 × {formatZar(Math.round(product.price / 4))} interest-free with Payflex · incl. VAT
+            Or 4 × {formatZar(Math.round(selectedPrice / 4))} interest-free with Payflex · incl. VAT
           </p>
           <p className="mt-4 text-muted-foreground">{product.description}</p>
 
@@ -145,7 +164,10 @@ function ProductPage() {
               {product.variants.map((v, i) => (
                 <button
                   key={v.name}
-                  onClick={() => setVariant(i)}
+                  onClick={() => {
+                    setVariant(i);
+                    setSize(null);
+                  }}
                   className={
                     "rounded-full border px-4 py-1.5 text-sm " +
                     (i === variant
@@ -175,8 +197,11 @@ function ProductPage() {
                 <button
                   key={s}
                   onClick={() => setSize(s)}
+                  disabled={Boolean(
+                    current.sizes && !current.sizes.some((v) => v.size === s && v.stock > 0),
+                  )}
                   className={
-                    "min-w-12 rounded-sm border px-3 py-2 text-sm " +
+                    "min-w-12 rounded-sm border px-3 py-2 text-sm disabled:opacity-35 disabled:cursor-not-allowed " +
                     (size === s
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border text-muted-foreground hover:border-primary/40")
@@ -188,6 +213,11 @@ function ProductPage() {
             </div>
           </div>
 
+          {current.sizes && current.sizes.every((s) => s.stock === 0) && (
+            <p className="mt-5 text-sm text-muted-foreground">
+              This colour is currently out of stock.
+            </p>
+          )}
           <div className="mt-8 flex gap-3">
             <div className="flex items-center gap-4 border border-border px-4">
               <button
@@ -206,9 +236,12 @@ function ProductPage() {
             </div>
             <button
               onClick={addToBag}
-              className="flex-1 rounded-sm bg-primary px-6 py-4 text-sm font-semibold uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90"
+              disabled={updating || Boolean(current.sizes && unavailable)}
+              className="flex-1 rounded-sm bg-primary px-6 py-4 text-sm font-semibold uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Add to bag · {formatZar(product.price * qty)}
+              {unavailable && size
+                ? "Out of stock"
+                : `Add to bag · ${formatZar(selectedPrice * qty)}`}
             </button>
           </div>
 
