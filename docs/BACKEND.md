@@ -74,4 +74,4 @@ Browser fixture tooling is only for development verification and must be cleaned
 3. Configure SMTP and verify real inbox delivery.
 4. Enter verified inventory quantities.
 5. Complete payment/webhook/fulfilment integration before accepting purchases.
-6. Add persistent request rate limits/bot protection for public newsletter and guest-cart endpoints before public launch.
+6. Monitor abuse and add CAPTCHA if needed. Cart requests are limited to 120/minute and newsletter requests to 10/hour per hashed IP, persisted in a private database table. Forwarded IP headers are trusted only on Vercel; other hosts use the direct peer or a shared fallback limit and need a verified proxy configuration. No raw IP is stored.

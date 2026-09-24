@@ -32,6 +32,20 @@ test("ERD constraints, customer isolation, cart ownership, checkout totals and s
         throw e;
       }
     };
+    const consume = (role = "service_role") =>
+      asRole(role, null, () =>
+        db.query("select public.consume_request_limit($1,2,60) as allowed", ["c".repeat(64)]),
+      );
+    assert.equal((await consume()).rows[0].allowed, true);
+    assert.equal((await consume()).rows[0].allowed, true);
+    assert.equal((await consume()).rows[0].allowed, false);
+    await assert.rejects(consume("anon"), /permission denied/);
+    await assert.rejects(
+      asRole("authenticated", one, () => db.query("select * from private.request_limit")),
+      /permission denied/,
+    );
+    await db.query("update private.request_limit set expires_at=now()-interval '1 second'");
+    assert.equal((await consume()).rows[0].allowed, true);
     await asRole("authenticated", one, () =>
       db.query("insert into public.customer(customer_id,first_name) values($1,$2)", [one, "First"]),
     );

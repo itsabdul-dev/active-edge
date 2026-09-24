@@ -1,3 +1,4 @@
+import { enforceRequestLimit } from "./rate-limit.server";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getSupabaseAdmin } from "@/lib/supabase/server.server";
@@ -16,6 +17,7 @@ const input = z.object({
 export const changeCart = createServerFn({ method: "POST" })
   .validator(input)
   .handler(async ({ data }) => {
+    await enforceRequestLimit("cart");
     const identity = await cartIdentity();
     const client = getSupabaseAdmin();
     const { data: cart, error } = await client.rpc("manage_cart", {

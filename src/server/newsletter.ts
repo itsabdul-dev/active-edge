@@ -1,3 +1,4 @@
+import { enforceRequestLimit } from "./rate-limit.server";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getSupabaseAdmin } from "@/lib/supabase/server.server";
@@ -10,6 +11,7 @@ export const subscribeNewsletter = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     if (data.website) return { received: true };
+    await enforceRequestLimit("newsletter");
     const { error } = await getSupabaseAdmin()
       .from("newsletter_subscriber")
       .upsert(

@@ -768,6 +768,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      consume_request_limit: {
+        Args: { p_key: string; p_limit: number; p_window_seconds: number };
+        Returns: boolean;
+      };
       create_pending_order: {
         Args: {
           p_address: Json;
