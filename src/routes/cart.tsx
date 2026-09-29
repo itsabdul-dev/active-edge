@@ -148,12 +148,12 @@ function CartPage() {
             Checkout
           </Link>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Prices in ZAR incl. 15% VAT · Pay in 4 with Payflex
+            Prices in ZAR incl. 15% VAT · Demo payments only
           </p>
           <ul className="mt-5 space-y-1.5 border-t border-border pt-4 text-xs text-muted-foreground">
             <li>2–3 working days to main centres</li>
             <li>30-day returns, free size exchanges</li>
-            <li>Secure checkout · Visa, Mastercard, Ozow, SnapScan</li>
+            <li>Simulated checkout · No real money charged</li>
           </ul>
         </aside>
       </div>

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -19,6 +20,7 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutPaymentRouteImport } from './routes/checkout.payment'
+import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -34,6 +36,11 @@ const AboutRoute = AboutRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -71,6 +78,11 @@ const CheckoutPaymentRoute = CheckoutPaymentRouteImport.update({
   path: '/checkout/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
@@ -81,12 +93,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/cart': typeof CartRoute
   '/faq': typeof FaqRoute
   '/reset-password': typeof ResetPasswordRoute
   '/shop': typeof ShopRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
 }
@@ -94,12 +108,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/cart': typeof CartRoute
   '/faq': typeof FaqRoute
   '/reset-password': typeof ResetPasswordRoute
   '/shop': typeof ShopRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/checkout': typeof CheckoutIndexRoute
 }
@@ -108,12 +124,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/cart': typeof CartRoute
   '/faq': typeof FaqRoute
   '/reset-password': typeof ResetPasswordRoute
   '/shop': typeof ShopRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
+  '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$slug': typeof ProductSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
 }
@@ -123,12 +141,14 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
+    | '/admin'
     | '/cart'
     | '/faq'
     | '/reset-password'
     | '/shop'
     | '/auth/callback'
     | '/checkout/payment'
+    | '/orders/$orderId'
     | '/product/$slug'
     | '/checkout/'
   fileRoutesByTo: FileRoutesByTo
@@ -136,12 +156,14 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
+    | '/admin'
     | '/cart'
     | '/faq'
     | '/reset-password'
     | '/shop'
     | '/auth/callback'
     | '/checkout/payment'
+    | '/orders/$orderId'
     | '/product/$slug'
     | '/checkout'
   id:
@@ -149,12 +171,14 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
+    | '/admin'
     | '/cart'
     | '/faq'
     | '/reset-password'
     | '/shop'
     | '/auth/callback'
     | '/checkout/payment'
+    | '/orders/$orderId'
     | '/product/$slug'
     | '/checkout/'
   fileRoutesById: FileRoutesById
@@ -163,12 +187,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRoute
   CartRoute: typeof CartRoute
   FaqRoute: typeof FaqRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ShopRoute: typeof ShopRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   CheckoutPaymentRoute: typeof CheckoutPaymentRoute
+  OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   ProductSlugRoute: typeof ProductSlugRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
 }
@@ -194,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -245,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orders/$orderId': {
+      id: '/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/orders/$orderId'
+      preLoaderRoute: typeof OrdersOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$slug': {
       id: '/product/$slug'
       path: '/product/$slug'
@@ -259,12 +299,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
+  AdminRoute: AdminRoute,
   CartRoute: CartRoute,
   FaqRoute: FaqRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ShopRoute: ShopRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   CheckoutPaymentRoute: CheckoutPaymentRoute,
+  OrdersOrderIdRoute: OrdersOrderIdRoute,
   ProductSlugRoute: ProductSlugRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
 }

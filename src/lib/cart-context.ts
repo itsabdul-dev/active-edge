@@ -14,6 +14,18 @@ export const cartLine = z.object({
 export type CartLine = z.infer<typeof cartLine>;
 export type CartContextValue = {
   lines: CartLine[];
+  drawerOpen: boolean;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+  pendingAddition: {
+    name: string;
+    image: string;
+    variant: string;
+    size: string;
+    qty: number;
+  } | null;
+  addedMessage: string;
+
   loading: boolean;
   updating: boolean;
   error: string;
@@ -21,6 +33,7 @@ export type CartContextValue = {
   remove: (id: string) => void;
   setQty: (id: string, qty: number) => void;
   clear: () => void;
+  refresh: () => Promise<void>;
   count: number;
   subtotal: number;
 };

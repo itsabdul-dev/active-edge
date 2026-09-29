@@ -94,7 +94,6 @@ function ProductPage() {
         },
         qty,
       );
-      toast.success(`${product.name} (${current.name}, ${size}) added to your bag`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not add to bag.");
     }
@@ -154,7 +153,7 @@ function ProductPage() {
           <h1 className="mt-3 text-3xl sm:text-4xl">{product.name}</h1>
           <p className="mt-2 text-lg">{formatZar(selectedPrice)}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Or 4 × {formatZar(Math.round(selectedPrice / 4))} interest-free with Payflex · incl. VAT
+            Incl. VAT · Demo checkout — no real money charged
           </p>
           <p className="mt-4 text-muted-foreground">{product.description}</p>
 

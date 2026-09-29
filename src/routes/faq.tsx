@@ -12,7 +12,7 @@ const faqs = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "Visa and Mastercard, instant EFT (Ozow), SnapScan and Payflex — pay in 4 interest-free instalments on any order.",
+    a: "This is a demonstration store. Test Visa and Mastercard numbers and mock Apple Pay or Google Pay flows simulate payments. No real money is charged and demo orders are not shipped.",
   },
   {
     q: "Are prices in Rand and do they include VAT?",
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/faq")({
       {
         name: "description",
         content:
-          "ActiveEdge delivery times across South Africa, 30-day returns, payment options including Payflex and Ozow, plus a full cm size guide.",
+          "ActiveEdge delivery times across South Africa, 30-day returns, simulated payment options, plus a full cm size guide.",
       },
       { property: "og:title", content: "Delivery, Returns & Size Guide | ActiveEdge" },
       {
@@ -76,7 +76,11 @@ export const Route = createFileRoute("/faq")({
 const helpCards = [
   { icon: Truck, title: "Free over R900", copy: "Flat R85 below that, 2–3 days to main centres." },
   { icon: RotateCcw, title: "30-day returns", copy: "Free size exchanges anywhere in SA." },
-  { icon: CreditCard, title: "Pay in 4", copy: "Payflex, Ozow EFT, SnapScan, Visa & Mastercard." },
+  {
+    icon: CreditCard,
+    title: "Demo payments",
+    copy: "Test cards and mock wallets. No real money charged.",
+  },
   { icon: Ruler, title: "True to size", copy: "Between sizes? Size down for compression fits." },
 ];
 

@@ -1,3 +1,4 @@
+import { adminAccess } from "@/server/admin";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -197,6 +198,11 @@ function AuthForm() {
   );
 }
 function CustomerDashboard({ userId, email }: { userId: string; email: string }) {
+  const access = useQuery({
+    queryKey: ["admin-access", userId],
+    queryFn: () => adminAccess(),
+    retry: false,
+  });
   const client = getSupabaseBrowser();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
@@ -214,7 +220,7 @@ function CustomerDashboard({ userId, email }: { userId: string; email: string })
         client
           .from("sales_order")
           .select(
-            "order_id, order_number, status, total_cents, placed_at, order_item(product_name_snapshot, colour_snapshot, size_snapshot, quantity, unit_price_cents), shipment(courier, tracking_number, status)",
+            "order_id, order_number, is_demo, status, total_cents, placed_at, order_item(product_name_snapshot, colour_snapshot, size_snapshot, quantity, unit_price_cents), shipment(courier, tracking_number, status)",
           )
           .eq("customer_id", userId)
           .order("placed_at", { ascending: false })
@@ -359,6 +365,11 @@ function CustomerDashboard({ userId, email }: { userId: string; email: string })
         </div>
       </div>
       <section className="border-t border-border pt-10">
+        {access.data && (
+          <Link to="/admin" className="btn-solid mb-6 inline-block">
+            Manage store
+          </Link>
+        )}
         <h2 className="text-2xl">Order history</h2>
         {orders.length === 0 ? (
           <p className="mt-4 text-muted-foreground">
@@ -371,8 +382,8 @@ function CustomerDashboard({ userId, email }: { userId: string; email: string })
           orders.map((order) => (
             <details key={order.order_id} className="mt-4 border border-border p-5">
               <summary className="cursor-pointer">
-                {order.order_number} · {order.status.replaceAll("_", " ")} ·{" "}
-                {money(order.total_cents)}
+                {order.order_number} · {order.is_demo ? "Demo · " : ""}
+                {order.status.replaceAll("_", " ")} · {money(order.total_cents)}
               </summary>
               <p className="mt-4 text-sm text-muted-foreground">
                 {new Date(order.placed_at).toLocaleDateString("en-ZA")}
@@ -385,6 +396,13 @@ function CustomerDashboard({ userId, email }: { userId: string; email: string })
                   </li>
                 ))}
               </ul>
+              <Link
+                to="/orders/$orderId"
+                params={{ orderId: order.order_id }}
+                className="mt-4 inline-block underline"
+              >
+                Track your order
+              </Link>
               {order.shipment && (
                 <p className="mt-4 text-sm">
                   {order.shipment.courier}: {order.shipment.tracking_number ?? "Tracking pending"} ·{" "}

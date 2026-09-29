@@ -11,13 +11,13 @@ const nav = [
 ];
 
 export function SiteHeader() {
-  const { count } = useCart();
+  const { count, openDrawer } = useCart();
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <div className="bg-primary py-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-foreground">
-        Free courier over R900 · 30-day returns · Pay in 4 with Payflex
+        Free courier over R900 · 30-day returns · Demo store · no real payments
       </div>
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-5">
@@ -49,8 +49,13 @@ export function SiteHeader() {
           <Link to="/account" aria-label="My account" className="ml-auto p-1 md:ml-0">
             <UserRound className="size-5" />
           </Link>
-          <Link
-            to="/cart"
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              openDrawer();
+            }}
+            aria-haspopup="dialog"
             className="relative flex items-center gap-2 text-sm md:ml-2"
             aria-label="Cart"
           >
@@ -60,7 +65,7 @@ export function SiteHeader() {
                 {count}
               </span>
             )}
-          </Link>
+          </button>
         </div>
         {open && (
           <nav className="flex flex-col gap-1 border-t border-border px-5 py-3 md:hidden">

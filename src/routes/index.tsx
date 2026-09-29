@@ -107,6 +107,7 @@ function Index() {
         <div className="grid items-stretch gap-4 lg:grid-cols-12">
           <Link
             to="/shop"
+            search={{ category: "men" }}
             className="group relative overflow-hidden bg-sand lg:col-span-7 lg:row-span-2"
           >
             <img
@@ -128,7 +129,11 @@ function Index() {
             </div>
           </Link>
 
-          <Link to="/shop" className="group relative overflow-hidden bg-sand lg:col-span-5">
+          <Link
+            to="/shop"
+            search={{ category: "women" }}
+            className="group relative overflow-hidden bg-sand lg:col-span-5"
+          >
             <img
               src={womensNavy}
               alt="Women's Motion Set in Indigo Navy"

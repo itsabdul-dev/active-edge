@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await getSupabaseBrowser().auth.signOut({ scope: "local" });
     if (error) throw error;
     sessionStorage.removeItem("ae-checkout-address");
+    sessionStorage.removeItem("ae-checkout-draft");
     setUser(null);
   };
   return <AuthContext.Provider value={{ user, loading, signOut }}>{children}</AuthContext.Provider>;

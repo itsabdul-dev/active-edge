@@ -119,7 +119,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-white/15">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-5 py-5">
-          {["Visa", "Mastercard", "Ozow EFT", "SnapScan", "Payflex"].map((p) => (
+          {["Visa demo", "Mastercard demo", "Apple Pay demo", "Google Pay demo"].map((p) => (
             <span
               key={p}
               className="border border-white/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] opacity-70"

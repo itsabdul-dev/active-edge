@@ -23,6 +23,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(0);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pendingAddition, setPendingAddition] = useState<CartContextValue["pendingAddition"]>(null);
+  const [addedMessage, setAddedMessage] = useState("");
+  const openDrawer = useCallback(() => {
+    setAddedMessage("");
+    setDrawerOpen(true);
+  }, []);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const generation = useRef(0);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   useEffect(() => {
@@ -103,21 +111,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartContextValue>(
     () => ({
       lines,
+      drawerOpen,
+      openDrawer,
+      closeDrawer,
+      pendingAddition,
+      addedMessage,
       loading,
       updating: pending > 0,
       error,
       add: async (line, qty = 1) => {
         if (loading) throw new Error("Your bag is still loading. Please try again.");
-        if (isSupabaseConfigured) {
-          if (!line.variantId) throw new Error("Please refresh this product before adding it.");
-          await mutate({ operation: "add", variantId: line.variantId, quantity: qty });
-        } else
-          setLines((prev) => {
-            const id = `${line.slug}-${line.variant}-${line.size}`;
-            return prev.some((l) => l.id === id)
-              ? prev.map((l) => (l.id === id ? { ...l, qty: Math.min(99, l.qty + qty) } : l))
-              : [...prev, { ...line, id, qty }];
-          });
+        const version = generation.current;
+        setAddedMessage("");
+        setPendingAddition({
+          name: line.name,
+          image: line.image,
+          variant: line.variant,
+          size: line.size,
+          qty,
+        });
+        setDrawerOpen(true);
+        try {
+          if (isSupabaseConfigured) {
+            if (!line.variantId) throw new Error("Please refresh this product before adding it.");
+            await mutate({ operation: "add", variantId: line.variantId, quantity: qty });
+          } else
+            setLines((prev) => {
+              const id = `${line.slug}-${line.variant}-${line.size}`;
+              return prev.some((l) => l.id === id)
+                ? prev.map((l) => (l.id === id ? { ...l, qty: Math.min(99, l.qty + qty) } : l))
+                : [...prev, { ...line, id, qty }];
+            });
+          if (version === generation.current) setAddedMessage(`${line.name} added to your bag`);
+        } finally {
+          setPendingAddition(null);
+        }
       },
       remove: (id) => {
         if (isSupabaseConfigured)
@@ -138,6 +166,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               : prev.map((l) => (l.id === id ? { ...l, qty: Math.min(99, qty) } : l)),
           );
       },
+      refresh: () => mutate({ operation: "load" }),
       clear: () => {
         if (isSupabaseConfigured) void mutate({ operation: "clear" }).catch(() => {});
         else setLines([]);
@@ -145,7 +174,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       count: lines.reduce((n, l) => n + l.qty, 0),
       subtotal: lines.reduce((n, l) => n + l.qty * l.price, 0),
     }),
-    [lines, loading, pending, error, mutate],
+    [
+      lines,
+      loading,
+      pending,
+      error,
+      mutate,
+      drawerOpen,
+      openDrawer,
+      closeDrawer,
+      pendingAddition,
+      addedMessage,
+    ],
   );
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

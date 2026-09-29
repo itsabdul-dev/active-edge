@@ -13,6 +13,8 @@ export const createPendingOrder = createServerFn({ method: "POST" })
         last_name: text,
         phone: text,
         street: text,
+        unit: z.string().trim().max(120).default(""),
+        delivery_instructions: z.string().trim().max(500).default(""),
         suburb: z.string().trim().max(200),
         city: text,
         postal_code: z.string().regex(/^\d{4}$/),

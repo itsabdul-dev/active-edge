@@ -6,6 +6,16 @@ import { formatZar, type Product } from "@/lib/products";
 import { loadCatalogue } from "@/lib/catalog";
 
 export const Route = createFileRoute("/shop")({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { category?: "men" | "women" | "sets" | undefined } => ({
+    category:
+      search["category"] === "men" ||
+      search["category"] === "women" ||
+      search["category"] === "sets"
+        ? search["category"]
+        : undefined,
+  }),
   loader: () => loadCatalogue(),
   head: () => ({
     meta: [
@@ -51,7 +61,16 @@ const swatchTone: Record<string, string> = {
 
 function ShopPage() {
   const products = Route.useLoaderData();
-  const [active, setActive] = useState<Filter>("All");
+  const { category } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const active: Filter =
+    category === "men"
+      ? "Men"
+      : category === "women"
+        ? "Women"
+        : category === "sets"
+          ? "Sets"
+          : "All";
   const [sort, setSort] = useState<Sort>("Featured");
 
   const visible = useMemo(() => {
@@ -109,7 +128,21 @@ function ShopPage() {
             {filters.map((f) => (
               <button
                 key={f}
-                onClick={() => setActive(f)}
+                aria-pressed={active === f}
+                onClick={() =>
+                  void navigate({
+                    search: {
+                      category:
+                        f === "All"
+                          ? undefined
+                          : f === "Men"
+                            ? "men"
+                            : f === "Women"
+                              ? "women"
+                              : "sets",
+                    },
+                  })
+                }
                 className={
                   "px-4 py-2 font-display text-xs uppercase tracking-[0.2em] transition-colors " +
                   (active === f

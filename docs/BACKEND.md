@@ -36,9 +36,9 @@ Open `http://localhost:3000`. Use that hostname for auth callbacks. Development 
 
 ## Inventory and payment status
 
-All imported SKUs start with **zero stock**. No quantities were invented. Set actual counts in Supabase's `product_variant.stock_on_hand` before selling. Catalogue import intentionally omits stock updates so rerunning it preserves existing counts.
+Imported SKUs initially started at zero. At the owner’s request, all 123 variants were subsequently set to 50 units for demonstration. Demo purchases now reduce those counts. Catalogue import intentionally omits stock updates so rerunning it preserves existing counts. Enter actual verified inventory before real selling.
 
-Checkout remains an explicit demo. It collects no card information, takes no money, places no order, and preserves the bag. `CHECKOUT_ENABLED=false` is a server-side gate on the pending-order API. Do not enable it by itself: the frontend has not been wired to live order/payment creation.
+Checkout now implements simulated card and wallet payments. It takes no money. Card validation happens only in browser memory; only brand and last four digits are sent. Successful simulations save orders/payments marked `is_demo`, reduce demonstration stock and convert the purchased bag. Declines/cancellations keep the bag. `CHECKOUT_ENABLED=false` must remain set: enabling live checkout blocks this simulator. The database kill switch is `private.payment_demo_settings.enabled`. See [DEMO-PAYMENTS.md](DEMO-PAYMENTS.md) for lecturer scenarios and limitations.
 
 Before enabling purchases, integrate the chosen payment provider, verify webhook signatures and payment amounts, deduplicate events, atomically consume/release reservations, handle late success and refunds, send confirmations, and connect fulfilment. Add scheduled expiry/cancellation processing so pending-order status follows expired reservations. Returns/refunds currently have schema and read access, not a complete operational workflow.
 
@@ -75,3 +75,7 @@ Browser fixture tooling is only for development verification and must be cleaned
 4. Enter verified inventory quantities.
 5. Complete payment/webhook/fulfilment integration before accepting purchases.
 6. Monitor abuse and add CAPTCHA if needed. Cart requests are limited to 120/minute and newsletter requests to 10/hour per hashed IP, persisted in a private database table. Forwarded IP headers are trusted only on Vercel; other hosts use the direct peer or a shared fallback limit and need a verified proxy configuration. No raw IP is stored.
+
+## Store management and tracking
+
+The local app now includes `/admin` for authorised store accounts and `/orders/$orderId` for customer tracking. See [ADMIN-TRACKING.md](ADMIN-TRACKING.md) for access, fulfilment stages, inventory controls and demo limitations. The admin/tracking and guest-ownership migrations are applied to the linked ActiveEdge project; frontend publication still requires deployment.

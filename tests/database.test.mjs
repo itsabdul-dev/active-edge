@@ -146,6 +146,8 @@ test("ERD constraints, customer isolation, cart ownership, checkout totals and s
     const other = await manage("b".repeat(64), two, "add", 2);
     const address = {
       email: "test@example.invalid",
+      unit: "Apartment 4",
+      delivery_instructions: "Leave with reception",
       first_name: "Test",
       last_name: "Customer",
       phone: "000",
@@ -176,6 +178,8 @@ test("ERD constraints, customer isolation, cart ownership, checkout totals and s
     );
     const saved = (await db.query("select * from public.sales_order where order_id=$1", [orderId]))
       .rows[0];
+    assert.equal(saved.unit_snapshot, "Apartment 4");
+    assert.equal(saved.delivery_instructions_snapshot, "Leave with reception");
     assert.equal(saved.subtotal_cents, 59800);
     assert.equal(saved.shipping_cents, 8500);
     assert.equal(saved.total_cents, 68300);
@@ -208,6 +212,153 @@ test("ERD constraints, customer isolation, cart ownership, checkout totals and s
       await order(other.cartId, "b".repeat(64), two),
       "expired reservations release availability",
     );
+    await db.query("update public.product_variant set stock_on_hand=10 where variant_id=$1", [
+      variant,
+    ]);
+    await manage("e".repeat(64), null, "add", 1);
+    const pay = (id, outcome, hash = "e".repeat(64), total = 38400, role = "service_role") =>
+      asRole(
+        role,
+        null,
+        async () =>
+          (
+            await db.query(
+              "select public.simulate_payment($1,$2,null,$3,$4,'card','Visa','1111',$5) as result",
+              [id, hash, address, outcome, total],
+            )
+          ).rows[0].result,
+      );
+    const attempt = "33333333-3333-4333-8333-333333333333";
+    const failedAttempt = "44444444-4444-4444-8444-444444444444";
+    await assert.rejects(pay(attempt, "approved", "e".repeat(64), 1), /Price changed/);
+    await assert.rejects(
+      pay(attempt, "approved", "e".repeat(64), 38400, "anon"),
+      /permission denied/,
+    );
+    assert.equal((await pay(failedAttempt, "declined")).status, "declined");
+    assert.equal((await manage("e".repeat(64), null, "load")).lines.length, 1);
+    const receipt = await pay(attempt, "approved");
+    assert.equal(receipt.status, "approved");
+    assert.match(receipt.orderNumber, /^AE-\d{4}-\d{6,}$/);
+    assert.deepEqual(await pay(attempt, "approved"), receipt);
+    const recover = (hash) =>
+      asRole(
+        "service_role",
+        null,
+        async () =>
+          (await db.query("select public.get_demo_payment($1,$2,null) as result", [attempt, hash]))
+            .rows[0].result,
+      );
+    assert.deepEqual(await recover("e".repeat(64)), receipt);
+    assert.equal(await recover("f".repeat(64)), null);
+
+    await assert.rejects(pay(attempt, "approved", "f".repeat(64)), /Payment unavailable/);
+    assert.equal(
+      (
+        await db.query("select stock_on_hand from public.product_variant where variant_id=$1", [
+          variant,
+        ])
+      ).rows[0].stock_on_hand,
+      9,
+    );
+    assert.equal(
+      (await db.query("select count(*)::int as n from public.payment where is_demo")).rows[0].n,
+      1,
+    );
+    assert.equal(
+      (await manage("e".repeat(64), null, "load")).lines.length,
+      0,
+      "new guest cart after payment",
+    );
+    assert.deepEqual(
+      await recover("e".repeat(64)),
+      receipt,
+      "guest receipt remains accessible after a new cart is created",
+    );
+    const advance = (actor, expected, next, role = "service_role") =>
+      asRole(role, actor, () =>
+        db.query(
+          "select public.admin_advance_order($1,$2,$3,$4,'AE-DEMO-123','ActiveEdge Demo Courier','Demo delivery update')",
+          [actor, receipt.orderId, expected, next],
+        ),
+      );
+    await assert.rejects(advance(two, "paid", "processing"), /Admin access required/);
+    await db.query("insert into private.store_admin(user_id) values($1)", [one]);
+    await assert.rejects(advance(one, "paid", "processing", "authenticated"), /permission denied/);
+    await assert.rejects(
+      asRole("authenticated", two, () =>
+        db.query("insert into private.store_admin(user_id) values($1)", [two]),
+      ),
+      /permission denied/,
+    );
+    await assert.rejects(advance(one, "paid", "delivered"), /Invalid delivery transition/);
+    await advance(one, "paid", "processing");
+    await assert.rejects(advance(one, "paid", "processing"), /Order changed/);
+    await advance(one, "processing", "shipped");
+    await advance(one, "shipped", "out_for_delivery");
+    await advance(one, "out_for_delivery", "delivered");
+    assert.equal(
+      (await db.query("select status from public.shipment where order_id=$1", [receipt.orderId]))
+        .rows[0].status,
+      "delivered",
+    );
+    assert.equal(
+      (
+        await db.query(
+          "select count(*)::int as n from public.order_tracking_event where order_id=$1",
+          [receipt.orderId],
+        )
+      ).rows[0].n,
+      4,
+    );
+    await db.query("update public.sales_order set customer_id=$1 where order_id=$2", [
+      one,
+      receipt.orderId,
+    ]);
+    assert.equal(
+      (
+        await asRole("authenticated", two, () =>
+          db.query("select * from public.order_tracking_event"),
+        )
+      ).rows.length,
+      0,
+    );
+    assert.equal(
+      (
+        await asRole("authenticated", one, () =>
+          db.query("select * from public.order_tracking_event"),
+        )
+      ).rows.length,
+      4,
+    );
+    await assert.rejects(
+      asRole("authenticated", one, () =>
+        db.query("update public.order_tracking_event set message='tampered'"),
+      ),
+      /permission denied/,
+    );
+    await assert.rejects(
+      asRole("service_role", null, () =>
+        db.query("select public.admin_set_stock($1,$2,9,50)", [two, variant]),
+      ),
+      /Admin access required/,
+    );
+    await asRole("service_role", null, () =>
+      db.query("select public.admin_set_stock($1,$2,9,50)", [one, variant]),
+    );
+    await assert.rejects(
+      asRole("service_role", null, () =>
+        db.query("select public.admin_set_stock($1,$2,9,60)", [one, variant]),
+      ),
+      /Stock changed/,
+    );
+    assert.equal(
+      (await db.query("select count(*)::int as n from private.admin_audit")).rows[0].n,
+      5,
+      "successful admin updates are audited",
+    );
+    await db.query("update private.payment_demo_settings set enabled=false");
+    await assert.rejects(pay(attempt, "approved"), /Demo payments disabled/);
     await db.query("update public.product set is_active=false where product_id=$1", [product]);
     const hidden = await asRole("anon", null, () =>
       db.query("select * from public.product_variant"),

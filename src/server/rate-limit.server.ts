@@ -2,7 +2,9 @@ import { createHmac } from "node:crypto";
 import { getRequestIP } from "@tanstack/react-start/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server.server";
 
-export async function enforceRequestLimit(scope: "cart" | "newsletter") {
+export async function enforceRequestLimit(
+  scope: "cart" | "newsletter" | "payment" | "address" | "tracking",
+) {
   const secret = process.env["SUPABASE_SECRET_KEY"];
   if (!secret) throw new Error("Store connection is not configured.");
   // Vercel overwrites X-Forwarded-For. Other hosts must not trust client headers.
@@ -10,8 +12,15 @@ export async function enforceRequestLimit(scope: "cart" | "newsletter") {
   const key = createHmac("sha256", secret).update(`${scope}:${ip}`).digest("hex");
   const { data, error } = await getSupabaseAdmin().rpc("consume_request_limit", {
     p_key: key,
-    p_limit: scope === "cart" ? 120 : 10,
-    p_window_seconds: scope === "cart" ? 60 : 3600,
+    p_limit:
+      scope === "cart"
+        ? 120
+        : scope === "payment"
+          ? 20
+          : scope === "address" || scope === "tracking"
+            ? 60
+            : 10,
+    p_window_seconds: scope === "newsletter" ? 3600 : 60,
   });
   if (error) throw new Error("Please try again shortly.");
   if (!data) throw new Error("Too many requests. Please wait before trying again.");

@@ -259,12 +259,47 @@ export type Database = {
           },
         ];
       };
+      order_tracking_event: {
+        Row: {
+          created_at: string;
+          event_id: string;
+          message: string;
+          order_id: string;
+          stage: string;
+        };
+        Insert: {
+          created_at?: string;
+          event_id?: string;
+          message: string;
+          order_id: string;
+          stage: string;
+        };
+        Update: {
+          created_at?: string;
+          event_id?: string;
+          message?: string;
+          order_id?: string;
+          stage?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_tracking_event_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "sales_order";
+            referencedColumns: ["order_id"];
+          },
+        ];
+      };
       payment: {
         Row: {
           amount_cents: number;
+          card_brand: string | null;
+          card_last_four: string | null;
           created_at: string;
           currency: string;
           idempotency_key: string;
+          is_demo: boolean;
           method: string | null;
           order_id: string;
           paid_at: string | null;
@@ -275,9 +310,12 @@ export type Database = {
         };
         Insert: {
           amount_cents: number;
+          card_brand?: string | null;
+          card_last_four?: string | null;
           created_at?: string;
           currency?: string;
           idempotency_key: string;
+          is_demo?: boolean;
           method?: string | null;
           order_id: string;
           paid_at?: string | null;
@@ -288,9 +326,12 @@ export type Database = {
         };
         Update: {
           amount_cents?: number;
+          card_brand?: string | null;
+          card_last_four?: string | null;
           created_at?: string;
           currency?: string;
           idempotency_key?: string;
+          is_demo?: boolean;
           method?: string | null;
           order_id?: string;
           paid_at?: string | null;
@@ -549,8 +590,10 @@ export type Database = {
           country_code: string;
           currency: string;
           customer_id: string | null;
+          delivery_instructions_snapshot: string;
           email_snapshot: string;
           first_name_snapshot: string;
+          is_demo: boolean;
           last_name_snapshot: string;
           order_id: string;
           order_number: string;
@@ -564,6 +607,7 @@ export type Database = {
           suburb_snapshot: string;
           tax_included_cents: number;
           total_cents: number;
+          unit_snapshot: string;
         };
         Insert: {
           cart_id?: string | null;
@@ -571,8 +615,10 @@ export type Database = {
           country_code?: string;
           currency?: string;
           customer_id?: string | null;
+          delivery_instructions_snapshot?: string;
           email_snapshot: string;
           first_name_snapshot: string;
+          is_demo?: boolean;
           last_name_snapshot: string;
           order_id?: string;
           order_number: string;
@@ -586,6 +632,7 @@ export type Database = {
           suburb_snapshot?: string;
           tax_included_cents: number;
           total_cents: number;
+          unit_snapshot?: string;
         };
         Update: {
           cart_id?: string | null;
@@ -593,8 +640,10 @@ export type Database = {
           country_code?: string;
           currency?: string;
           customer_id?: string | null;
+          delivery_instructions_snapshot?: string;
           email_snapshot?: string;
           first_name_snapshot?: string;
+          is_demo?: boolean;
           last_name_snapshot?: string;
           order_id?: string;
           order_number?: string;
@@ -608,6 +657,7 @@ export type Database = {
           suburb_snapshot?: string;
           tax_included_cents?: number;
           total_cents?: number;
+          unit_snapshot?: string;
         };
         Relationships: [
           {
@@ -768,6 +818,27 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_advance_order: {
+        Args: {
+          p_actor: string;
+          p_courier: string;
+          p_expected_stage: string;
+          p_message: string;
+          p_order_id: string;
+          p_stage: string;
+          p_tracking: string;
+        };
+        Returns: undefined;
+      };
+      admin_set_stock: {
+        Args: {
+          p_actor: string;
+          p_expected: number;
+          p_quantity: number;
+          p_variant_id: string;
+        };
+        Returns: undefined;
+      };
       consume_request_limit: {
         Args: { p_key: string; p_limit: number; p_window_seconds: number };
         Returns: boolean;
@@ -781,6 +852,15 @@ export type Database = {
         };
         Returns: string;
       };
+      get_demo_payment: {
+        Args: {
+          p_attempt_id: string;
+          p_customer_id: string;
+          p_token_hash: string;
+        };
+        Returns: Json;
+      };
+      is_store_admin: { Args: { p_user_id: string }; Returns: boolean };
       manage_cart: {
         Args: {
           p_customer_id: string;
@@ -789,6 +869,20 @@ export type Database = {
           p_quantity?: number;
           p_token_hash: string;
           p_variant_id?: string;
+        };
+        Returns: Json;
+      };
+      simulate_payment: {
+        Args: {
+          p_address: Json;
+          p_attempt_id: string;
+          p_brand: string;
+          p_customer_id: string;
+          p_expected_total: number;
+          p_last_four: string;
+          p_method: string;
+          p_outcome: string;
+          p_token_hash: string;
         };
         Returns: Json;
       };

@@ -7,10 +7,11 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
+import { CartDrawer } from "@/components/cart-drawer";
 import { CartProvider } from "@/lib/cart";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -136,6 +137,7 @@ function RootComponent() {
             </main>
             <SiteFooter />
           </div>
+          <CartDrawer />
           <Toaster />
         </CartProvider>
       </AuthProvider>
