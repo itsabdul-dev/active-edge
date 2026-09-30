@@ -1,0 +1,134 @@
+.sales-periods {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0;
+}
+.sales-periods button {
+  padding: 10px 17px;
+  border: 1px solid #d9ded3;
+  border-radius: 24px;
+  font-size: 13px;
+}
+.sales-periods button[aria-pressed="true"] {
+  background: #263b22;
+  color: white;
+  border-color: #263b22;
+}
+.sales-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.sales-metric {
+  padding: 24px;
+  background: #f2f5ed;
+  border: 1px solid #dfe5d8;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sales-metric > span {
+  font-size: 13px;
+  color: #4b6040;
+}
+.sales-metric strong {
+  font-size: clamp(24px, 3vw, 36px);
+  letter-spacing: -1px;
+}
+.sales-metric small {
+  color: #66705f;
+  line-height: 1.5;
+}
+.sales-chart {
+  border: 1px solid #dfe5d8;
+  border-radius: 18px;
+  padding: 28px;
+  margin-bottom: 20px;
+}
+.sales-chart h3 {
+  font-size: 22px;
+  font-weight: 600;
+}
+.sales-chart > p {
+  font-size: 13px;
+  color: #66705f;
+  margin: 8px 0 24px;
+}
+.sales-bars {
+  display: flex;
+  align-items: end;
+  gap: 3px;
+  height: 180px;
+  border-bottom: 1px solid #cbd6c1;
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0,
+    transparent 44px,
+    #edf0e9 44px,
+    #edf0e9 45px
+  );
+}
+.sales-bars > div {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: end;
+}
+.sales-bars span {
+  display: block;
+  width: 100%;
+  background: #59734a;
+  border-radius: 4px 4px 0 0;
+  min-height: 1px;
+}
+.sales-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #66705f;
+  margin-top: 12px;
+}
+.sales-details {
+  margin-top: 24px;
+  font-size: 14px;
+}
+.sales-details summary {
+  cursor: pointer;
+}
+.sales-table {
+  overflow-x: auto;
+  max-height: 360px;
+  margin-top: 16px;
+}
+.sales-table table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.sales-table th,
+.sales-table td {
+  padding: 12px;
+  border-bottom: 1px solid #edf0e9;
+}
+.sales-empty {
+  padding: 40px 0;
+  color: #66705f;
+}
+@media (max-width: 800px) {
+  .sales-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 420px) {
+  .sales-metrics {
+    grid-template-columns: 1fr;
+  }
+  .sales-chart {
+    padding: 18px;
+  }
+  .sales-periods button {
+    padding: 8px 12px;
+  }
+}

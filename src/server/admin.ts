@@ -81,3 +81,29 @@ export const setStock = createServerFn({ method: "POST" })
     if (error) throw new Error("Stock changed or units are reserved. Refresh before trying again.");
     return { success: true };
   });
+
+export const adminSales = createServerFn({ method: "POST" })
+  .validator(z.object({ days: z.union([z.literal(7), z.literal(30), z.literal(90)]) }))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const { salesWindow, summarizeSales } = await import("@/lib/sales");
+    const window = salesWindow(data.days);
+    const rows: import("@/lib/sales").SalesRow[] = [];
+    // Fetch every page so reports never silently stop at the API's row limit.
+    for (let page = 0; ; page++) {
+      const result = await getSupabaseAdmin()
+        .from("sales_order")
+        .select("placed_at,total_cents,shipping_cents")
+        .eq("is_demo", true)
+        .in("status", ["paid", "processing", "shipped", "delivered"])
+        .gte("placed_at", window.start)
+        .lte("placed_at", window.end)
+        .order("placed_at")
+        .order("order_id")
+        .range(page * 500, page * 500 + 499);
+      if (result.error) throw new Error("Sales could not load. Please retry.");
+      rows.push(...result.data);
+      if (result.data.length < 500) break;
+    }
+    return { ...summarizeSales(rows, window.start, data.days), updatedAt: window.end };
+  });

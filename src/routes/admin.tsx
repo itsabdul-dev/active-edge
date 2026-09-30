@@ -1,7 +1,8 @@
+import { AdminSales } from "@/components/admin-sales";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Package, Boxes, ArrowRight, ShieldCheck, RefreshCw } from "lucide-react";
+import { Package, Boxes, BarChart3, ArrowRight, ShieldCheck, RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { adminAccess, adminOrders, adminInventory, advanceOrder, setStock } from "@/server/admin";
 import { deliveryStage, deliverySteps } from "@/lib/tracking";
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/admin")({
 });
 function Admin() {
   const { user, loading } = useAuth();
-  const [tab, setTab] = useState<"orders" | "stock">("orders");
+  const [tab, setTab] = useState<"sales" | "orders" | "stock">("sales");
   const access = useQuery({
     queryKey: ["admin-access", user?.id],
     queryFn: () => adminAccess(),
@@ -58,6 +59,10 @@ function Admin() {
         </Link>
       </div>
       <div className="ops-tabs" aria-label="Admin sections">
+        <button aria-pressed={tab === "sales"} onClick={() => setTab("sales")}>
+          <BarChart3 size={18} />
+          Sales
+        </button>
         <button aria-pressed={tab === "orders"} onClick={() => setTab("orders")}>
           <Package size={18} />
           Orders
@@ -67,7 +72,13 @@ function Admin() {
           Inventory
         </button>
       </div>
-      {tab === "orders" ? <Orders key={user.id} /> : <Inventory key={user.id} />}
+      {tab === "sales" ? (
+        <AdminSales key={user.id} />
+      ) : tab === "orders" ? (
+        <Orders key={user.id} />
+      ) : (
+        <Inventory key={user.id} />
+      )}
     </div>
   );
 }
