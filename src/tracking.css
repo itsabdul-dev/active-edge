@@ -1,0 +1,290 @@
+.tracking-shell {
+  max-width: 1160px;
+}
+.tracking-shell > .ops-heading {
+  margin-top: 24px;
+}
+.tracking-shell > .ops-heading h1 {
+  max-width: 620px;
+  font-size: clamp(34px, 4.5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -2px;
+}
+.tracking-shell > .ops-heading p {
+  font-size: 12px;
+}
+.journey-card {
+  overflow: hidden;
+  border: 1px solid #dce4d5;
+  border-radius: 22px;
+  background: #f0f4eb;
+  box-shadow: 0 8px 30px #283b1910;
+  margin: 18px 0 28px;
+  animation: tracking-reveal 0.4s ease-out;
+}
+.journey-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 23px 27px;
+}
+.journey-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3c5130;
+}
+.journey-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6f885c;
+}
+.journey-status-dot.moving {
+  animation: journey-pulse 2s ease-in-out 3;
+}
+.journey-demo {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  border: 1px solid #d2dcc9;
+  border-radius: 20px;
+  padding: 7px 10px;
+  color: #738167;
+}
+.journey-map {
+  margin: -15px 0 -8px;
+  overflow: hidden;
+}
+.journey-map svg {
+  width: 100%;
+  max-height: 300px;
+  display: block;
+}
+.journey-road-progress {
+  transition: stroke-dashoffset 0.85s ease-in-out;
+}
+.journey-vehicle {
+  transition: transform 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.journey-beacon {
+  animation: journey-pulse 2s ease-in-out 3;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.journey-endpoints {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 28px 25px;
+  color: #4e6342;
+}
+.journey-endpoints > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+.journey-endpoints small {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  margin: 0 0 4px;
+  color: #8a9680;
+}
+.journey-next {
+  background: #e7edde;
+  padding: 14px 28px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 12px;
+  color: #526347;
+}
+.journey-next small {
+  font-size: 10px;
+  margin: 0;
+  color: #7d8a72;
+}
+.tracking-shell .tracking-layout {
+  gap: 24px;
+}
+.tracking-shell .ops-card {
+  border-radius: 20px;
+  margin: 0;
+}
+.tracking-shell .tracking-hero {
+  border: 0;
+  padding-bottom: 10px;
+}
+.tracking-shell .tracking-hero h2 {
+  font-size: 23px;
+}
+.tracking-progress {
+  height: 4px;
+  background: #edf0e8;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 16px 0 0;
+}
+.tracking-progress > span {
+  display: block;
+  height: 100%;
+  background: #6c8658;
+  transition: width 0.65s ease;
+  border-radius: 5px;
+}
+.tracking-status-title {
+  animation: tracking-reveal 0.3s ease-out;
+}
+.tracking-shell .tracking-timeline {
+  padding-top: 30px;
+}
+.tracking-shell .tracking-timeline li {
+  padding-bottom: 28px;
+}
+.tracking-shell .tracking-timeline li:last-child {
+  padding-bottom: 5px;
+}
+.tracking-shell .tracking-timeline .is-current .tracking-dot {
+  box-shadow: 0 0 0 5px #edf2e7;
+}
+.tracking-shell .tracking-timeline .is-current h3 {
+  font-weight: 700;
+}
+.tracking-shell .tracking-timeline .is-current time {
+  color: #617c4e;
+}
+.tracking-shell .ops-hint {
+  font-size: 10px;
+  margin-bottom: 0;
+}
+.tracking-shell .tracking-summary {
+  background: #fafbf8;
+}
+.tracking-summary .tracking-order-number {
+  font-family: monospace;
+  font-size: 12px;
+  margin: -12px 0 22px;
+}
+.tracking-reference {
+  display: block;
+  font-family: monospace;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  overflow-wrap: anywhere;
+  margin-top: 7px;
+}
+.tracking-summary .tracking-item {
+  position: relative;
+  padding: 22px 0 22px 48px;
+  min-height: 80px;
+}
+.tracking-item-icon {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  background: #eaf0e2;
+  color: #6a8157;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+}
+.tracking-summary .ops-note {
+  border: 1px solid #e1e7d9;
+  background: white;
+}
+.tracking-summary .ops-button {
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+.tracking-summary .ops-button:hover {
+  background: #415638;
+}
+.tracking-summary .ops-button:active {
+  transform: scale(0.98);
+}
+@keyframes tracking-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes journey-pulse {
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+@media (max-width: 760px) {
+  .journey-top {
+    padding: 19px 17px;
+  }
+  .journey-label {
+    font-size: 11px;
+  }
+  .journey-demo {
+    font-size: 8px;
+    padding: 5px 7px;
+    letter-spacing: 0.7px;
+  }
+  .journey-map {
+    margin: 0 -45px;
+  }
+  .journey-map svg {
+    min-height: 185px;
+  }
+  .journey-endpoints {
+    padding: 6px 19px 22px;
+  }
+  .journey-endpoints > div {
+    font-size: 11px;
+    gap: 7px;
+    max-width: 44%;
+  }
+  .journey-next {
+    padding: 13px 19px;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .tracking-shell .tracking-layout {
+    gap: 18px;
+  }
+  .tracking-shell > .ops-heading h1 {
+    letter-spacing: -1.2px;
+  }
+  .tracking-shell .tracking-hero h2 {
+    font-size: 20px;
+  }
+  .tracking-shell .ops-heading > .ops-link {
+    align-self: flex-end;
+    margin-top: -10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journey-card,
+  .tracking-status-title,
+  .journey-status-dot.moving,
+  .journey-beacon {
+    animation: none;
+  }
+  .journey-road-progress,
+  .journey-vehicle,
+  .tracking-progress > span,
+  .tracking-summary .ops-button {
+    transition: none;
+  }
+  .tracking-summary .ops-button:active {
+    transform: none;
+  }
+}

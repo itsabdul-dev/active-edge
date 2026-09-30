@@ -1,3 +1,4 @@
+import { SuccessMark } from "@/components/success-mark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -198,8 +199,13 @@ function CheckoutPayment() {
     return (
       <main className="gateway-shell">
         <div className="gateway-receipt gateway-enter">
+          <div className="gateway-celebration" aria-hidden="true">
+            {Array.from({ length: 8 }, (_, i) => (
+              <i key={i} style={{ transform: `rotate(${i * 45}deg)` }} />
+            ))}
+          </div>
           <div className="gateway-success">
-            <Check size={38} strokeWidth={2.5} />
+            <SuccessMark />
           </div>
           <p className="gateway-kicker">PAYMENT COMPLETE</p>
           <h1 ref={stageHeading} tabIndex={-1}>
@@ -235,15 +241,21 @@ function CheckoutPayment() {
           <p className="gateway-demo-note">
             Demo transaction. No money was charged, and no shipment or email will be sent.
           </p>
-          <Link to="/shop" className="gateway-pay">
-            Continue shopping <ArrowRight size={18} />
-          </Link>
+          {receipt.orderId ? (
+            <Link
+              to="/orders/$orderId"
+              params={{ orderId: receipt.orderId }}
+              className="gateway-pay"
+            >
+              Track your order <ArrowRight size={18} />
+            </Link>
+          ) : (
+            <Link to="/shop" className="gateway-pay">
+              Continue shopping <ArrowRight size={18} />
+            </Link>
+          )}
           <div className="gateway-receipt-links">
-            {receipt.orderId && (
-              <Link to="/orders/$orderId" params={{ orderId: receipt.orderId }}>
-                Track your order
-              </Link>
-            )}
+            <Link to="/shop">Continue shopping</Link>
             <Link to="/account">View my orders</Link>
             <button onClick={() => window.print()}>Print receipt</button>
           </div>

@@ -375,3 +375,68 @@
 .address-attribution a {
   text-decoration: underline;
 }
+
+.ae-button-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  animation: ae-label-in 0.22s ease-out;
+}
+.ae-add-button {
+  transition:
+    transform 0.16s ease,
+    background-color 0.2s ease;
+}
+.ae-add-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.ae-bag-count {
+  animation: ae-count-pop 0.32s cubic-bezier(0.2, 1.5, 0.5, 1);
+}
+.ae-bag-success {
+  animation: ae-label-in 0.28s ease-out;
+}
+.bag-drawer[data-state="open"] {
+  animation-duration: 280ms;
+}
+.bag-drawer[data-state="closed"] {
+  animation-duration: 200ms;
+}
+@keyframes ae-count-pop {
+  0% {
+    transform: scale(0.5);
+  }
+  65% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes ae-label-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ae-button-label,
+  .ae-bag-count,
+  .ae-bag-success {
+    animation: none;
+  }
+  .ae-add-button {
+    transition: none;
+  }
+  .ae-add-button:active:not(:disabled) {
+    transform: none;
+  }
+  .bag-drawer[data-state] {
+    animation: none;
+  }
+}

@@ -872,6 +872,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      next_order_number: { Args: { p_placed_at?: string }; Returns: string };
       simulate_payment: {
         Args: {
           p_address: Json;

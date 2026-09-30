@@ -61,7 +61,10 @@ export function SiteHeader() {
           >
             <ShoppingBag className="size-5" />
             {count > 0 && (
-              <span className="absolute -right-2 -top-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+              <span
+                key={count}
+                className="ae-bag-count absolute -right-2 -top-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground"
+              >
                 {count}
               </span>
             )}

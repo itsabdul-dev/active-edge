@@ -47,7 +47,7 @@ export function CartDrawer() {
           {cart.addedMessage && (
             <p
               role="status"
-              className="mb-5 flex items-center gap-2 rounded-lg bg-[#edf2e7] p-3 text-xs text-[#526444]"
+              className="ae-bag-success mb-5 flex items-center gap-2 rounded-lg bg-[#edf2e7] p-3 text-xs text-[#526444]"
             >
               <CheckCircle2 className="size-4" />
               {cart.addedMessage}

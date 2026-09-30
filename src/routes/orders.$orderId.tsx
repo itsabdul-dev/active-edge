@@ -1,3 +1,5 @@
+import { DeliveryJourney } from "@/components/delivery-journey";
+import "@/tracking.css";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Package, Truck, Check, RefreshCw, ArrowLeft } from "lucide-react";
@@ -76,9 +78,10 @@ function Tracking() {
           Refresh
         </button>
       </div>
+      <DeliveryJourney current={current} city={order.city_snapshot} isDemo={order.is_demo} />
       <div className="tracking-layout">
         <section className="ops-card">
-          <div className="tracking-hero">
+          <div className="tracking-hero" role="status" aria-live="polite">
             <div className={`tracking-icon ${stage === "out_for_delivery" ? "is-moving" : ""}`}>
               {stage === "delivered" ? (
                 <Check size={30} />
@@ -90,9 +93,22 @@ function Tracking() {
             </div>
             <div>
               <span className="ops-eyebrow">Current status</span>
-              <h2>{deliverySteps[current]?.label ?? order.status.replaceAll("_", " ")}</h2>
+              <h2 key={stage} className="tracking-status-title">
+                {deliverySteps[current]?.label ?? order.status.replaceAll("_", " ")}
+              </h2>
               <p>{order.city_snapshot}</p>
             </div>
+          </div>
+          <div
+            className="tracking-progress"
+            role="progressbar"
+            aria-label="Delivery milestones"
+            aria-valuemin={0}
+            aria-valuemax={4}
+            aria-valuenow={Math.max(0, current)}
+            aria-valuetext={deliverySteps[current]?.label ?? order.status}
+          >
+            <span style={{ width: `${Math.max(0, current) * 25}%` }} />
           </div>
           <ol className="tracking-timeline">
             {deliverySteps.map((step, i) => {
@@ -100,13 +116,13 @@ function Tracking() {
               return (
                 <li
                   key={step.stage}
-                  className={i <= current ? "is-complete" : ""}
+                  className={`${i <= current ? "is-complete" : ""} ${i === current ? "is-current" : ""}`}
                   aria-current={i === current ? "step" : undefined}
                 >
                   <span className="tracking-dot">{i <= current ? <Check size={14} /> : i + 1}</span>
                   <div>
                     <h3>{step.label}</h3>
-                    <p>{event?.message ?? step.description}</p>
+                    <p>{event?.message ?? (i <= current ? step.description : "Coming next")}</p>
                     {(event || (i === 0 && current >= 0)) && (
                       <time>
                         {new Date(event?.created_at ?? order.placed_at).toLocaleString("en-ZA")}
@@ -124,12 +140,14 @@ function Tracking() {
           </p>
         </section>
         <aside className="ops-card tracking-summary">
-          <span className="ops-eyebrow">Delivery information</span>
-          <h2>Your order</h2>
+          <span className="ops-eyebrow">Packed for your next move</span>
+          <h2>Your kit.</h2>
+          <p className="tracking-order-number">{order.order_number}</p>
           {order.shipment ? (
             <div className="ops-note">
               <small>{order.shipment.courier}</small>
-              <strong>{order.shipment.tracking_number}</strong>
+              <small>TRACKING NUMBER</small>
+              <strong className="tracking-reference">{order.shipment.tracking_number}</strong>
             </div>
           ) : (
             <p className="ops-note">
@@ -138,6 +156,9 @@ function Tracking() {
           )}
           {order.order_item.map((item, i) => (
             <div className="tracking-item" key={i}>
+              <span className="tracking-item-icon" aria-hidden="true">
+                <Package size={20} />
+              </span>
               <strong>{item.product_name_snapshot}</strong>
               <small>
                 {item.colour_snapshot} · {item.size_snapshot} · Qty {item.quantity}

@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Check, Leaf, Truck, RotateCcw } from "lucide-react";
 import { formatZar, type Product } from "@/lib/products";
@@ -66,6 +66,12 @@ function ProductPage() {
   const [variant, setVariant] = useState(0);
   const [size, setSize] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+  useEffect(() => {
+    if (!added) return;
+    const timer = setTimeout(() => setAdded(false), 2200);
+    return () => clearTimeout(timer);
+  }, [added]);
   const current = product.variants[variant]!;
   const selectedSku = current.sizes?.find((s) => s.size === size);
   const selectedPrice = selectedSku?.price ?? product.price;
@@ -81,6 +87,7 @@ function ProductPage() {
       toast.error("This size is currently out of stock.");
       return;
     }
+    setAdded(false);
     try {
       await add(
         {
@@ -94,6 +101,7 @@ function ProductPage() {
         },
         qty,
       );
+      setAdded(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not add to bag.");
     }
@@ -236,11 +244,25 @@ function ProductPage() {
             <button
               onClick={addToBag}
               disabled={updating || Boolean(current.sizes && unavailable)}
-              className="flex-1 rounded-sm bg-primary px-6 py-4 text-sm font-semibold uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="ae-add-button flex-1 rounded-sm bg-primary px-6 py-4 text-sm font-semibold uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {unavailable && size
-                ? "Out of stock"
-                : `Add to bag · ${formatZar(selectedPrice * qty)}`}
+              <span
+                key={updating ? "adding" : added ? "added" : "ready"}
+                className="ae-button-label"
+                aria-live="polite"
+              >
+                {updating ? (
+                  "Adding to your bag…"
+                ) : added ? (
+                  <>
+                    <Check size={18} /> Added to your bag
+                  </>
+                ) : unavailable && size ? (
+                  "Out of stock"
+                ) : (
+                  `Add to bag · ${formatZar(selectedPrice * qty)}`
+                )}
+              </span>
             </button>
           </div>
 
